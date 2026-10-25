@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AtelierCode v1.0.0</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#38bdf8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; }
+    header { padding: 1rem; background: #1e293b; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+    h1 { margin: 0; color: #38bdf8; font-size: 1.25rem; }
+    .tabs { display: flex; gap: 0.5rem; padding: 0.75rem 1rem; background: #1e293b; border-bottom: 1px solid #334155; flex-wrap: wrap; }
+    .tab { background: #334155; border: none; color: #f8fafc; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
+    .tab.active { background: #38bdf8; color: #0f172a; font-weight: bold; }
+    .panel { display: none; padding: 1rem; }
+    .panel.active { display: block; }
+    textarea { width: 100%; height: 320px; background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; padding: 1rem; font-family: ui-monospace, monospace; font-size: 0.875rem; resize: vertical; }
+    iframe, pre, .output { width: 100%; min-height: 200px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem; margin-top: 0.5rem; }
+    .btn { background: #38bdf8; color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer; margin: 0.5rem 0.5rem 0 0; }
+    .pixel-grid { display: grid; grid-template-columns: repeat(16, 20px); gap: 1px; background: #000; margin: 1rem 0; }
+    .pixel { width: 20px; height: 20px; cursor: pointer; }
+    img { image-rendering: pixelated; max-width: 200px; margin: 0.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AtelierCode <span id="version">v1.0.0</span></h1>
+    <span id="status">Gratuit · localStorage</span>
+    <button class="btn" onclick="downloadAll()">Tout télécharger (ZIP)</button>
+  </header>
+  <div class="tabs">
+    <button class="tab active" data-tab="html">HTML</button>
+    <button class="tab" data-tab="css">CSS</button>
+    <button class="tab" data-tab="js">JavaScript</button>
+    <button class="tab" data-tab="json">JSON</button>
+    <button class="tab" data-tab="md">Markdown</button>
+    <button class="tab" data-tab="php">PHP</button>
+    <button class="tab" data-tab="noms">Noms</button>
+    <button class="tab" data-tab="pixel">Pixel Art</button>
+  </div>
+
+  <div id="html" class="panel active">
+    <textarea id="htmlCode"></textarea>
+    <button class="btn" onclick="previewHTML()">Aperçu</button>
+    <button class="btn" onclick="copyCode('htmlCode')">Copier</button>
+    <button class="btn" onclick="downloadCode('htmlCode', 'index.html', 'text/html')">Télécharger</button>
+    <iframe id="htmlPreview" sandbox="allow-scripts"></iframe>
+  </div>
+
+  <div id="css" class="panel">
+    <textarea id="cssCode">body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; }
+h1 { color: #38bdf8; }
+.card { background: #1e293b; border: 1px solid #334155; padding: 1.25rem; border-radius: 12px; }
+.btn { background: #38bdf8; color: #0f172a; border: none; padding: .5rem 1rem; border-radius: 6px; font-weight: bold; }</textarea>
+    <button class="btn" onclick="copyCode('cssCode')">Copier</button>
+    <button class="btn" onclick="downloadCode('cssCode', 'style.css', 'text/css')">Télécharger</button>
+  </div>
+
+  <div id="js" class="panel">
+    <textarea id="jsCode"></textarea>
+    <button class="btn" onclick="runJS()">Exécuter</button>
+    <button class="btn" onclick="copyCode('jsCode')">Copier</button>
+    <button class="btn" onclick="downloadCode('jsCode', 'script.js', 'text/javascript')">Télécharger</button>
+    <pre id="jsOutput" class="output"></pre>
+  </div>
+
+  <div id="json" class="panel">
+    <textarea id="jsonCode"></textarea>
+    <button class="btn" onclick="formatJSON()">Formater</button>
+    <button class="btn" onclick="copyCode('jsonCode')">Copier</button>
+    <button class="btn" onclick="downloadCode('jsonCode', 'data.json', 'application/json')">Télécharger</button>
+    <pre id="jsonOutput" class="output"></pre>
+  </div>
+
+  <div id="md" class="panel">
+    <textarea id="mdCode"># AtelierCode
+Éditeur Markdown simple.</textarea>
+    <button class="btn" onclick="renderMD()">Rendu</button>
+    <button class="btn" onclick="copyCode('mdCode')">Copier</button>
+    <button class="btn" onclick="downloadCode('mdCode', 'readme.md', 'text/markdown')">Télécharger</button>
+    <div id="mdOutput" class="output"></div>
+  </div>
+
+  <div id="php" class="panel">
+    <textarea id="phpCode"><?php
+echo "Bonjour depuis AtelierCode !";
+$fib = [0, 1];
+for ($i = 2; $i < 10; $i++) $fib[] = $fib[$i-1] + $fib[$i-2];
+print_r($fib);
+?></textarea>
+    <button class="btn" onclick="copyCode('phpCode')">Copier</button>
+    <button class="btn" onclick="downloadCode('phpCode', 'script.php', 'text/x-php')">Télécharger</button>
+  </div>
+
+  <div id="noms" class="panel">
+    <textarea id="nomsCode" placeholder="Prénom Nom">Jean Dupont
+Marie Martin</textarea>
+    <button class="btn" onclick="copyCode('nomsCode')">Copier</button>
+    <button class="btn" onclick="downloadCode('nomsCode', 'noms.txt', 'text/plain')">Télécharger</button>
+    <button class="btn" onclick="saveNoms()">Sauvegarder</button>
+    <pre id="nomsOutput" class="output"></pre>
+  </div>
+
+  <div id="pixel" class="panel">
+    <p>Pixel Art PNG</p>
+    <img src="smiley.png" alt="Smiley" onerror="this.style.display='none'">
+    <img src="smiley-red.png" alt="Smiley red" onerror="this.style.display='none'">
+    <div class="pixel-grid" id="pixelGrid"></div>
+    <button class="btn" onclick="clearPixel()">Effacer</button>
+    <button class="btn" onclick="savePixel()">Sauvegarder localStorage</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>
+    // Load data.json
+    fetch('data.json').then(r => r.json()).then(data => {
+      document.getElementById('version').textContent = 'v' + data.version;
+      document.getElementById('status').textContent = (data.gratuit ? 'Gratuit' : 'Payant') + ' · ' + data.stockage;
+      document.getElementById('jsonCode').value = JSON.stringify(data, null, 2);
+    }).catch(() => {
+      document.getElementById('jsonCode').value = JSON.stringify({projet:"AtelierCode",version:"1.0.0",fonctionnalites:["HTML","JSON","JavaScript","Markdown","Pixel Art PNG"],gratuit:true,stockage:"localStorage"}, null, 2);
+    });
+
+    // Load script.js
+    fetch('script.js').then(r => r.text()).then(t => {
+      document.getElementById('jsCode').value = t;
+    }).catch(() => {
+      document.getElementById('jsCode').value = `console.log("Initialisation de l'AtelierCode...");
+function fibonacci(n) {
+  const suite = [0, 1];
+  for (let i = 2; i < n; i++) suite.push(suite[i - 1] + suite[i - 2]);
+  return suite;
+}
+console.log("Fibonacci (10 termes) :", fibonacci(10));
+console.info({ statut: "ok", termes: 10 });
+console.warn("Ceci est un avertissement");`;
+    });
+
+    // Default HTML
+    document.getElementById('htmlCode').value = `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><title>Aperçu</title>
+<style>body{font-family:system-ui;background:#0f172a;color:#f8fafc;padding:1.5rem;}
+h1{color:#38bdf8;} .card{background:#1e293b;padding:1.25rem;border-radius:12px;border:1px solid #334155;}
+.btn{background:#38bdf8;color:#0f172a;border:none;padding:.5rem 1rem;border-radius:6px;font-weight:bold;}</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Bonjour le monde !</h1>
+    <p>AtelierCode</p>
+    <button class="btn" onclick="this.textContent='Cliqué !'">Cliquer ici</button>
+  </div>
+</body>
+</html>`;
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      };
+    });
+
+    function previewHTML() {
+      document.getElementById('htmlPreview').srcdoc = document.getElementById('htmlCode').value;
+    }
+    previewHTML();
+
+    function runJS() {
+      const code = document.getElementById('jsCode').value;
+      const output = document.getElementById('jsOutput');
+      output.textContent = '';
+      const log = (...args) => output.textContent += args.map(String).join(' ') + '\n';
+      const oldLog = console.log, oldInfo = console.info, oldWarn = console.warn;
+      console.log = log; console.info = log; console.warn = log;
+      try { eval(code); } catch(e) { output.textContent += 'Erreur: ' + e.message; }
+      console.log = oldLog; console.info = oldInfo; console.warn = oldWarn;
+    }
+
+    function formatJSON() {
+      try {
+        const obj = JSON.parse(document.getElementById('jsonCode').value);
+        document.getElementById('jsonOutput').textContent = JSON.stringify(obj, null, 2);
+        localStorage.setItem('atelier-json', JSON.stringify(obj));
+      } catch(e) { document.getElementById('jsonOutput').textContent = 'JSON invalide: ' + e.message; }
+    }
+
+    function renderMD() {
+      let md = document.getElementById('mdCode').value;
+      md = md.replace(/^# (.*$)/gim, '<h1>$1</h1>').replace(/^## (.*$)/gim, '<h2>$1</h2>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+      document.getElementById('mdOutput').innerHTML = md;
+    }
+
+    // Pixel art
+    const grid = document.getElementById('pixelGrid');
+    let color = '#facc15';
+    for(let i = 0; i < 16*16; i++) {
+      const p = document.createElement('div');
+      p.className = 'pixel';
+      p.style.background = '#000';
+      p.onclick = () => p.style.background = color;
+      grid.appendChild(p);
+    }
+    function clearPixel() { [...grid.children].forEach(p => p.style.background = '#000'); }
+    function savePixel() {
+      const data = [...grid.children].map(p => p.style.background).join(',');
+      localStorage.setItem('atelier-pixel', data);
+      alert('Sauvegardé dans localStorage');
+    }
+    const saved = localStorage.getItem('atelier-pixel');
+    if(saved) {
+      const colors = saved.split(',');
+      [...grid.children].forEach((p, i) => p.style.background = colors[i] || '#000');
+    }
+
+    function saveNoms() {
+      const content = document.getElementById('nomsCode').value;
+      localStorage.setItem('atelier-noms', content);
+      document.getElementById('nomsOutput').textContent = 'Sauvegardé :\n' + content;
+    }
+    const savedNoms = localStorage.getItem('atelier-noms');
+    if (savedNoms) document.getElementById('nomsCode').value = savedNoms;
+
+    function downloadCode(id, filename, type) {
+      const content = document.getElementById(id).value;
+      const blob = new Blob([content], { type });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function copyCode(id) {
+      const content = document.getElementById(id).value;
+      navigator.clipboard.writeText(content).then(() => {
+        alert('Copié dans le presse-papiers');
+      }).catch(() => {
+        alert('Échec de la copie');
+      });
+    }
+
+    async function downloadAll() {
+      const zip = new JSZip();
+      zip.file("index.html", document.getElementById('htmlCode').value);
+      zip.file("style.css", document.getElementById('cssCode').value);
+      zip.file("script.js", document.getElementById('jsCode').value);
+      zip.file("data.json", document.getElementById('jsonCode').value);
+      zip.file("readme.md", document.getElementById('mdCode').value);
+      zip.file("noms.txt", document.getElementById('nomsCode').value);
+      zip.file("script.php", document.getElementById('phpCode').value);
+      try {
+        const [s1, s2] = await Promise.all([
+          fetch('smiley.png').then(r => r.blob()),
+          fetch('smiley-red.png').then(r => r.blob())
+        ]);
+        zip.file("smiley.png", s1);
+        zip.file("smiley-red.png", s2);
+      } catch(e) {}
+      const blob = await zip.generateAsync({ type: "blob" });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = "AtelierCode.zip";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  </script>
+</body>
+</html>
