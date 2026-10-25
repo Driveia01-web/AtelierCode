@@ -1,0 +1,7 @@
+{
+  "projet": "AtelierCode",
+  "version": "1.0.0",
+  "fonctionnalites": ["HTML", "JSON", "JavaScript", "Markdown", "Pixel Art PNG"],
+  "gratuit": true,
+  "stockage": "localStorage"
+}
